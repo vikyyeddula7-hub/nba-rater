@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ stats.name }} — HoopRater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-logo">HOOP<span>RATER</span></a>
+    <div class="nav-links">
+      <a href="/">Ratings</a>
+      <a href="/teams">Teams</a>
+      <a href="/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search player…" autocomplete="off" />
+        <div id="search-results" class="search-dropdown hidden"></div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">☀️</button>
+    </div>
+  </nav>
+
+  {% set tier = rating_engine.rating_tier(rating) %}
+  {% set tc = team_color(stats.team) %}
+
+  <!-- ── PLAYER HERO ── -->
+  <div class="player-hero" data-badge="{{ tier.badge }}" style="--team-clr: {{ tc }};">
+    <div class="player-hero-accent"></div>
+    <div class="player-hero-bg"></div>
+    <div class="container player-hero-inner">
+
+      <div class="player-photo-wrap">
+        <img class="player-photo" src="{{ stats.headshot_url }}"
+             alt="{{ stats.name }}"
+             onerror="this.src='/static/img/silhouette.svg'" />
+      </div>
+
+      <div class="player-hero-info">
+        <div class="breadcrumb"><a href="/">← All Players</a></div>
+        <p class="player-pos-tag">{{ stats.position }} · {{ stats.team }} · 2025–26</p>
+        <h1 class="player-name">{{ stats.name }}</h1>
+        <p class="player-season">{{ stats.gp }} Games · {{ "%.1f"|format(stats.min) }} MPG · Year {{ stats.age }}</p>
+
+        <div class="big5">
+          <div class="big5-stat">
+            <span class="big5-val">{{ "%.1f"|format(stats.pts) }}</span>
+            <span class="big5-lbl">PTS</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ "%.1f"|format(stats.reb) }}</span>
+            <span class="big5-lbl">REB</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ "%.1f"|format(stats.ast) }}</span>
+            <span class="big5-lbl">AST</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ "%.1f"|format(stats.stl) }}</span>
+            <span class="big5-lbl">STL</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ "%.1f"|format(stats.blk) }}</span>
+            <span class="big5-lbl">BLK</span>
+          </div>
+        </div>
+
+        <!-- Callout badges -->
+        <div class="callout-badges">
+          {% if stats.pts >= 30 %}<span class="cbadge">🔥 30+ Scorer</span>{% endif %}
+          {% if stats.pts >= 25 and stats.pts < 30 %}<span class="cbadge">⚡ 25+ Scorer</span>{% endif %}
+          {% if stats.reb >= 10 %}<span class="cbadge">💪 Double-Double Machine</span>{% endif %}
+          {% if stats.ast >= 8 %}<span class="cbadge">🎯 Elite Playmaker</span>{% endif %}
+          {% if stats.stl + stats.blk >= 3 %}<span class="cbadge">🛡️ Two-Way Force</span>{% endif %}
+          {% if stats.fg_pct >= 0.55 %}<span class="cbadge">🎯 High-Efficiency Scorer</span>{% endif %}
+          {% if stats.fg3_pct >= 0.40 and stats.fg3a >= 5 %}<span class="cbadge">🌟 Elite 3PT Shooter</span>{% endif %}
+          {% if stats.ts_pct >= 0.62 %}<span class="cbadge">📊 Elite TS%</span>{% endif %}
+          {% if rating >= 97 %}<span class="cbadge gold-badge">👑 All-Time Great</span>{% endif %}
+          {% if rating >= 94 and rating <= 96 %}<span class="cbadge gold-badge">🏆 MVP-Caliber</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="ovr-hero-wrap">
+        <div class="ovr-hero badge-{{ tier.badge }}" id="ovr-hero" data-target="{{ rating }}">
+          <span class="ovr-hero-num" id="ovr-counter">0</span>
+          <span class="ovr-hero-lbl">OVR</span>
+          <span class="ovr-hero-tier" style="color:{{ tier.color }}">{{ tier.label }}</span>
+          <span class="ovr-hero-game">NBA 2K26</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <main class="container player-main">
+    <div class="player-cols">
+
+      <!-- LEFT: stat table -->
+      <section class="stat-section">
+        <h2 class="section-title">2025–26 Season Stats</h2>
+        <table class="stat-table">
+          <thead>
+            <tr><th>Category</th><th>Value</th><th>Context</th></tr>
+          </thead>
+          <tbody>
+            {% set rows = [
+              ("Points",        stats.pts,            "pts",      false),
+              ("Rebounds",      stats.reb,            "reb",      false),
+              ("Assists",       stats.ast,            "ast",      false),
+              ("Steals",        stats.stl,            "stl",      false),
+              ("Blocks",        stats.blk,            "blk",      false),
+              ("Turnovers",     stats.tov,            "tov",      true),
+              ("FG%",           stats.fg_pct * 100,   "fg_pct",   false),
+              ("3PT%",          stats.fg3_pct * 100,  "fg3_pct",  false),
+              ("FT%",           stats.ft_pct * 100,   "ft_pct",   false),
+              ("True Shooting", stats.ts_pct * 100,   "ts_pct",   false),
+              ("+/- Per Game",  stats.plus_minus,     "plus_minus",false),
+            ] %}
+            {% for label, val, key, inv in rows %}
+            <tr>
+              <td>{{ label }}</td>
+              <td class="mono {% if key == 'plus_minus' %}{% if val > 0 %}pos{% elif val < 0 %}neg{% endif %}{% endif %}">
+                {% if key in ['fg_pct','fg3_pct','ft_pct','ts_pct'] %}
+                  {{ "%.1f"|format(val) }}%
+                {% elif key == 'plus_minus' %}
+                  {% if val > 0 %}+{% endif %}{{ "%.1f"|format(val) }}
+                {% else %}
+                  {{ "%.1f"|format(val) }}
+                {% endif %}
+              </td>
+              <td class="ctx">{{ context_note(val if key not in ['fg_pct','fg3_pct','ft_pct','ts_pct'] else val/100, key.replace('_pct','_pct') if key in ['fg_pct','fg3_pct','ft_pct','ts_pct'] else key, inv) }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+              <td>Minutes</td>
+              <td class="mono">{{ "%.1f"|format(stats.min) }}</td>
+              <td class="ctx">—</td>
+            </tr>
+            <tr>
+              <td>Games Played</td>
+              <td class="mono">{{ stats.gp }}</td>
+              <td class="ctx">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- RIGHT: attribute bars + explain -->
+      <section class="attr-section">
+        <h2 class="section-title">2K26 Attribute Breakdown</h2>
+        <div class="attr-list">
+          {% for attr, val in breakdown.items() %}
+          <div class="attr-row">
+            <span class="attr-name">{{ attr }}</span>
+            <div class="attr-bar-wrap" title="{{ attr }}: {{ val }}/99">
+              <div class="attr-bar" style="--pct: {{ val }}%; --clr: {{ bar_color(val) }}"></div>
+            </div>
+            <span class="attr-val mono">{{ val }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Shot chart summary -->
+        <div class="shot-summary">
+          <h3 class="section-title" style="margin-top:2rem;">Shooting at a Glance</h3>
+          <div class="shot-grid">
+            <div class="shot-cell">
+              <div class="shot-arc" style="--pct: {{ stats.fg_pct }}; --clr: {{ bar_color((stats.fg_pct * 100 - 40) / 0.25 + 60 | int) }}">
+                <svg viewBox="0 0 80 50" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 45 A35 35 0 0 1 70 45" fill="none" stroke="var(--border)" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M10 45 A35 35 0 0 1 70 45" fill="none" stroke="{{ bar_color(75) }}" stroke-width="5"
+                        stroke-linecap="round" stroke-dasharray="110"
+                        stroke-dashoffset="{{ (1 - stats.fg_pct) * 110 }}" />
+                  <text x="40" y="44" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--text)" font-weight="600">{{ "%.0f"|format(stats.fg_pct * 100) }}%</text>
+                  <text x="40" y="56" text-anchor="middle" font-family="Barlow" font-size="7" fill="var(--text-dim)">FG%</text>
+                </svg>
+              </div>
+            </div>
+            <div class="shot-cell">
+              <svg viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 50 A35 35 0 0 1 70 50" fill="none" stroke="var(--border)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M10 50 A35 35 0 0 1 70 50" fill="none" stroke="{{ bar_color(75) }}" stroke-width="5"
+                      stroke-linecap="round" stroke-dasharray="110"
+                      stroke-dashoffset="{{ (1 - stats.fg3_pct) * 110 }}" />
+                <text x="40" y="49" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--text)" font-weight="600">{{ "%.0f"|format(stats.fg3_pct * 100) }}%</text>
+                <text x="40" y="61" text-anchor="middle" font-family="Barlow" font-size="7" fill="var(--text-dim)">3PT%</text>
+              </svg>
+            </div>
+            <div class="shot-cell">
+              <svg viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 50 A35 35 0 0 1 70 50" fill="none" stroke="var(--border)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M10 50 A35 35 0 0 1 70 50" fill="none" stroke="{{ bar_color(75) }}" stroke-width="5"
+                      stroke-linecap="round" stroke-dasharray="110"
+                      stroke-dashoffset="{{ (1 - stats.ft_pct) * 110 }}" />
+                <text x="40" y="49" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="var(--text)" font-weight="600">{{ "%.0f"|format(stats.ft_pct * 100) }}%</text>
+                <text x="40" y="61" text-anchor="middle" font-family="Barlow" font-size="7" fill="var(--text-dim)">FT%</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="rating-explain">
+          <h3>About This Rating</h3>
+          <p>The OVR is the official <strong>NBA 2K26</strong> player rating sourced from <a href="https://nba.2k.com/2k26/ratings/" target="_blank">nba.2k.com</a>. The attribute breakdown is estimated from 2025–26 season stats.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>HoopRater · Stats from <a href="https://www.nba.com" target="_blank">NBA.com</a> · OVR from <a href="https://nba.2k.com/2k26/ratings/" target="_blank">NBA 2K26</a></p>
+  </footer>
+
+  <script src="/static/js/search.js"></script>
+  <script src="/static/js/player.js"></script>
+</body>
+</html>

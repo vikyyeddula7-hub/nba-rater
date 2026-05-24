@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team Ratings — HoopRater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-logo">HOOP<span>RATER</span></a>
+    <div class="nav-links">
+      <a href="/">Ratings</a>
+      <a href="/teams" class="active">Teams</a>
+      <a href="/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search player…" autocomplete="off" />
+        <div id="search-results" class="search-dropdown hidden"></div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">☀️</button>
+    </div>
+  </nav>
+
+  <div class="compare-hero">
+    <div class="container">
+      <h1>Team Ratings</h1>
+      <p>All 30 NBA teams ranked by their official NBA 2K26 team OVR. Click any team to see their full roster.</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <section class="filter-bar">
+    <div class="filter-label">FILTER:</div>
+    <div class="filter-tabs">
+      <button class="ftab active" data-tfilter="all">All Teams</button>
+      <button class="ftab" data-tfilter="diamond">◆ Contenders (84+)</button>
+      <button class="ftab" data-tfilter="gold">◆ Playoff (82–83)</button>
+      <button class="ftab" data-tfilter="silver">◆ Bubble (80–81)</button>
+      <button class="ftab" data-tfilter="grey">◆ Rebuilding (&lt;80)</button>
+    </div>
+    <div class="sort-wrap">
+      <label>SORT:</label>
+      <select id="team-sort">
+        <option value="ovr">Team OVR</option>
+        <option value="name">Team Name</option>
+      </select>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="section-header">
+      <h2>All 30 Teams</h2>
+      <p class="section-sub" id="team-count">Showing 30 teams · Ranked by NBA 2K26 team OVR</p>
+    </div>
+
+    <div class="team-grid" id="team-grid">
+      {% for t in teams %}
+      <div class="team-card" data-tbadge="{{ t.tier.badge }}" data-tovr="{{ t.ovr }}" data-tname="{{ t.name }}"
+           style="--team-clr: {{ t.color }}; --rank: {{ loop.index }}">
+
+        <div class="team-card-stripe" style="background: {{ t.color }};"></div>
+
+        <div class="team-card-header">
+          <div class="team-rank-badge">
+            <span class="tr-num">{{ t.ovr }}</span>
+            <span class="tr-lbl">OVR</span>
+          </div>
+          <div class="team-name-block">
+            <div class="team-name">{{ t.name }}</div>
+            <div class="team-tier-label" style="color: {{ t.color }}">{{ t.tier.label }}</div>
+          </div>
+          <div class="team-rank-num">#{{ loop.index }}</div>
+        </div>
+
+        <div class="team-star-row">
+          <img class="team-star-headshot"
+               src="https://cdn.nba.com/headshots/nba/latest/1040x760/{{ t.star_id }}.png"
+               onerror="this.src='/static/img/silhouette.svg'" alt="{{ t.star }}" />
+          <div class="team-star-info">
+            <div class="team-star-name">{{ t.star }}</div>
+            <div class="team-star-ovr">
+              <span class="star-ovr-num">{{ t.star_ovr }}</span> OVR
+            </div>
+          </div>
+        </div>
+
+        <!-- Roster preview: top 5 -->
+        <div class="roster-preview">
+          {% for p in t.roster[:5] %}
+          <div class="rp-row">
+            <span class="rp-pos">{{ p.pos }}</span>
+            <span class="rp-name">{{ p.name }}</span>
+            <span class="rp-ovr {% if p.ovr >= 90 %}rp-elite{% elif p.ovr >= 85 %}rp-great{% endif %}">{{ p.ovr }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button class="see-roster-btn" onclick="toggleRoster(this)" data-team="{{ t.name }}">
+          See Full Roster ▾
+        </button>
+
+        <!-- Full roster (hidden by default) -->
+        <div class="full-roster hidden">
+          <div class="full-roster-header">
+            <span>POS</span><span>PLAYER</span><span>OVR</span>
+          </div>
+          {% for p in t.roster %}
+          <div class="fr-row">
+            <span class="rp-pos">{{ p.pos }}</span>
+            <a href="/player/{{ p.id }}" class="fr-name">{{ p.name }}</a>
+            <span class="rp-ovr {% if p.ovr >= 90 %}rp-elite{% elif p.ovr >= 85 %}rp-great{% endif %}">{{ p.ovr }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>HoopRater · Team OVRs from <a href="https://nba.2k.com/2k26/" target="_blank">NBA 2K26</a> · Player ratings from <a href="https://nba.2k.com/2k26/ratings/" target="_blank">nba.2k.com</a></p>
+  </footer>
+
+  <script src="/static/js/search.js"></script>
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/teams.js"></script>
+</body>
+</html>

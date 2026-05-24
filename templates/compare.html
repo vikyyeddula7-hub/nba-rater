@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Players — HoopRater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-logo">HOOP<span>RATER</span></a>
+    <div class="nav-links">
+      <a href="/">Ratings</a>
+      <a href="/teams">Teams</a>
+      <a href="/compare" class="active">Compare</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search player…" autocomplete="off" />
+        <div id="search-results" class="search-dropdown hidden"></div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">☀️</button>
+    </div>
+  </nav>
+
+  <div class="compare-hero">
+    <div class="container">
+      <h1>Compare Players</h1>
+      <p>Search two players to compare their stats and ratings side by side.</p>
+    </div>
+  </div>
+
+  <main class="container compare-main">
+    <div class="compare-selectors">
+      <div class="compare-picker" id="picker-a">
+        <label>Player A</label>
+        <input type="text" id="search-a" placeholder="Search player A…" autocomplete="off" />
+        <div id="results-a" class="search-dropdown hidden"></div>
+        <div id="card-a" class="compare-card-slot empty">Select a player</div>
+      </div>
+
+      <div class="vs-divider">VS</div>
+
+      <div class="compare-picker" id="picker-b">
+        <label>Player B</label>
+        <input type="text" id="search-b" placeholder="Search player B…" autocomplete="off" />
+        <div id="results-b" class="search-dropdown hidden"></div>
+        <div id="card-b" class="compare-card-slot empty">Select a player</div>
+      </div>
+    </div>
+
+    <!-- Populated by JS -->
+    <div id="compare-table-wrap" class="hidden"></div>
+  </main>
+
+  <footer class="footer">
+    <p>HoopRater · Stats from <a href="https://www.nba.com" target="_blank">NBA.com</a> via nba_api</p>
+  </footer>
+
+  <script src="/static/js/search.js"></script>
+  <script src="/static/js/compare.js"></script>
+  <script src="/static/js/home.js"></script>
+</body>
+</html>

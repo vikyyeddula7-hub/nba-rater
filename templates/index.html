@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HoopRater — NBA Player Ratings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">HOOP<span>RATER</span></a>
+    <div class="nav-links">
+      <a href="/" class="active">Ratings</a>
+      <a href="/teams">Teams</a>
+      <a href="/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Search player…" autocomplete="off" />
+        <div id="search-results" class="search-dropdown hidden"></div>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">☀️</button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">2025–26 SEASON · NBA 2K26 OFFICIAL RATINGS</p>
+      <h1>NBA Player<br /><em>Performance Ratings</em></h1>
+      <p class="hero-sub">Official NBA 2K26 OVR ratings alongside real 2025–26 season stats. Click any player for a full breakdown.</p>
+      <div class="hero-stats-bar">
+        <div class="hero-stat"><span class="hs-val">{{ leaders|length }}</span><span class="hs-lbl">Players Rated</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ leaders|selectattr('ovr','ge',95)|list|length }}</span><span class="hs-lbl">98–95 OVR</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ leaders[0].name.split()[-1] }}</span><span class="hs-lbl">Top Rated</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ leaders[0].ovr }}</span><span class="hs-lbl">Highest OVR</span></div>
+      </div>
+    </div>
+    <div class="hero-grid-deco"></div>
+  </header>
+
+  <!-- ── FILTER BAR ── -->
+  <section class="filter-bar">
+    <div class="filter-label">FILTER:</div>
+    <div class="filter-tabs">
+      <button class="ftab active" data-filter="all">All</button>
+      <button class="ftab" data-filter="diamond">◆ 97–99 GOAT</button>
+      <button class="ftab" data-filter="gold">◆ 94–96 MVP</button>
+      <button class="ftab" data-filter="silver">◆ 90–93 All-Star</button>
+      <button class="ftab" data-filter="bronze">◆ 85–89 Starter</button>
+    </div>
+    <div class="sort-wrap">
+      <label>SORT:</label>
+      <select id="sort-select">
+        <option value="ovr">OVR Rating</option>
+        <option value="pts">Points</option>
+        <option value="reb">Rebounds</option>
+        <option value="ast">Assists</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- ── PLAYER GRID ── -->
+  <main class="container">
+    <div class="section-header">
+      <h2>Top Rated Players</h2>
+      <p class="section-sub" id="grid-count">Showing {{ leaders|length }} players · Ranked by NBA 2K26 OVR</p>
+    </div>
+
+    <div class="player-grid" id="player-grid">
+      {% for p in leaders %}
+      {% set badge = p.tier.badge %}
+      {% set tc = team_color(p.team) %}
+      <a href="/player/{{ p.id }}"
+         class="player-card {{ badge }}"
+         style="--rank: {{ loop.index }}; --team-clr: {{ tc }};"
+         data-badge="{{ badge }}"
+         data-ovr="{{ p.ovr }}"
+         data-pts="{{ p.pts }}"
+         data-reb="{{ p.reb }}"
+         data-ast="{{ p.ast }}">
+
+        <div class="card-team-stripe" style="background: {{ tc }};"></div>
+        <div class="card-rank">#{{ loop.index }}</div>
+
+        <div class="card-ovr-badge badge-{{ badge }}">
+          <span class="ovr-number">{{ p.ovr }}</span>
+          <span class="ovr-label">OVR</span>
+        </div>
+
+        <div class="card-headshot">
+          <img src="{{ p.headshot_url }}" alt="{{ p.name }}"
+               onerror="this.src='/static/img/silhouette.svg'" loading="lazy" />
+        </div>
+
+        <div class="card-info">
+          <span class="card-name">{{ p.name }}</span>
+          <span class="card-meta">{{ p.position }} · {{ p.team }}</span>
+          <div class="card-stats-row">
+            <span><strong>{{ "%.1f"|format(p.pts) }}</strong> PTS</span>
+            <span><strong>{{ "%.1f"|format(p.reb) }}</strong> REB</span>
+            <span><strong>{{ "%.1f"|format(p.ast) }}</strong> AST</span>
+          </div>
+          <div class="card-stats-row small">
+            <span>{{ "%.1f"|format(p.stl) }} STL</span>
+            <span>{{ "%.1f"|format(p.blk) }} BLK</span>
+            <span>{{ "%.0f"|format(p.fg_pct * 100) }}% FG</span>
+          </div>
+        </div>
+
+        <div class="card-tier-label" style="color: {{ p.tier.color }}; border-top-color: {{ tc }}22;">
+          {{ p.tier.label }}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>HoopRater · Stats from <a href="https://www.nba.com" target="_blank">NBA.com</a> via nba_api · OVR ratings from <a href="https://nba.2k.com/2k26/ratings/" target="_blank">NBA 2K26</a></p>
+  </footer>
+
+  <script src="/static/js/search.js"></script>
+  <script src="/static/js/home.js"></script>
+</body>
+</html>

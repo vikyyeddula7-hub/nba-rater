@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATP Rankings — SmashRater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/tennis.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="sport-switcher">
+      <a href="/" class="sport-btn">🏀 HoopRater</a>
+      <a href="/tennis" class="sport-btn active">🎾 SmashRater</a>
+    </div>
+    <div class="nav-links">
+      <a href="/tennis">Ratings</a>
+      <a href="/tennis/rankings" class="active">Rankings</a>
+      <a href="/tennis/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <input id="tennis-search" type="text" placeholder="Search player…" autocomplete="off" />
+      <div id="tennis-search-results" class="search-dropdown hidden"></div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle mode">☀️</button>
+    </div>
+  </nav>
+
+  <div class="compare-hero">
+    <div class="container">
+      <h1>🎾 ATP Live Rankings</h1>
+      <p>Official ATP singles rankings as of May 25, 2026. Click any player to see their full profile.</p>
+    </div>
+  </div>
+
+  <main class="container" style="padding: 2rem;">
+    <table class="rankings-table">
+      <thead>
+        <tr>
+          <th class="rank-col">Rank</th>
+          <th>Player</th>
+          <th>Country</th>
+          <th class="num-col">Points</th>
+          <th class="num-col">GS</th>
+          <th class="num-col">Age</th>
+          <th class="num-col">SmashRater</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in players %}
+        <tr class="ranking-row" onclick="window.location='/tennis/player/{{ p.rank }}'">
+          <td class="rank-col">
+            <span class="rank-num {% if p.rank <= 3 %}top3{% elif p.rank <= 10 %}top10{% endif %}">
+              {{ p.rank }}
+            </span>
+          </td>
+          <td class="player-name-cell">
+            <span class="flag-cell">{{ p.flag }}</span>
+            <a href="/tennis/player/{{ p.rank }}" class="player-link">{{ p.name }}</a>
+          </td>
+          <td class="country-cell">{{ p.country }}</td>
+          <td class="num-col mono">{{ p.points }}</td>
+          <td class="num-col mono">{{ p.grand_slams }}</td>
+          <td class="num-col mono">{{ p.age }}</td>
+          <td class="num-col">
+            <span class="rating-pill badge-{{ p.tier.badge }}" style="color:{{ p.tier.color }}">
+              {{ p.rating }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+
+  <footer class="footer">
+    <p>SmashRater · Rankings from <a href="https://www.atptour.com" target="_blank">ATP Tour</a> · May 25, 2026</p>
+  </footer>
+
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/tennis_search.js"></script>
+</body>
+</html>

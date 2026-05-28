@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ player.name }} — SmashRater</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/tennis.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="sport-switcher">
+      <a href="/" class="sport-btn">🏀 HoopRater</a>
+      <a href="/tennis" class="sport-btn active">🎾 SmashRater</a>
+    </div>
+    <div class="nav-links">
+      <a href="/tennis">Ratings</a>
+      <a href="/tennis/rankings">Rankings</a>
+      <a href="/tennis/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <input id="tennis-search" type="text" placeholder="Search player…" autocomplete="off" />
+      <div id="tennis-search-results" class="search-dropdown hidden"></div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle mode">☀️</button>
+    </div>
+  </nav>
+
+  {% set tier = player.tier %}
+
+  <div class="player-hero" style="--team-clr: {{ tier.color }};">
+    <div class="player-hero-accent"></div>
+    <div class="player-hero-bg"></div>
+    <div class="container player-hero-inner">
+
+      <!-- Avatar / flag -->
+      <div class="player-photo-wrap">
+        <div class="tennis-avatar-large badge-{{ tier.badge }}">
+          <div class="ta-flag">{{ player.flag }}</div>
+          <div class="ta-initial">{{ player.name.split()[0][0] }}{{ player.name.split()[-1][0] }}</div>
+        </div>
+      </div>
+
+      <div class="player-hero-info">
+        <div class="breadcrumb"><a href="/tennis">← All Players</a></div>
+        <p class="player-pos-tag">{{ player.country }} · ATP #{{ player.rank }} · {{ "Left" if player.hand == "L" else "Right" }}-Handed</p>
+        <h1 class="player-name">{{ player.name }}</h1>
+        <p class="player-season">Turned Pro {{ player.turned_pro }} · Age {{ player.age }} · Career High: #{{ player.career_high }}</p>
+
+        <div class="big5">
+          <div class="big5-stat">
+            <span class="big5-val">{{ player.points }}</span>
+            <span class="big5-lbl">ATP PTS</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ player.grand_slams }}</span>
+            <span class="big5-lbl">GS TITLES</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">#{{ player.career_high }}</span>
+            <span class="big5-lbl">CAREER HIGH</span>
+          </div>
+          <div class="big5-stat">
+            <span class="big5-val">{{ player.turned_pro }}</span>
+            <span class="big5-lbl">TURNED PRO</span>
+          </div>
+        </div>
+
+        <!-- Callout badges -->
+        <div class="callout-badges">
+          {% if player.grand_slams >= 10 %}<span class="cbadge gold-badge">👑 All-Time Legend</span>{% endif %}
+          {% if player.grand_slams >= 3 and player.grand_slams < 10 %}<span class="cbadge gold-badge">🏆 Multiple GS Champion</span>{% endif %}
+          {% if player.grand_slams == 1 %}<span class="cbadge">🎾 Grand Slam Champion</span>{% endif %}
+          {% if player.career_high == 1 %}<span class="cbadge gold-badge">👑 Former World No.1</span>{% endif %}
+          {% if player.rank <= 5 %}<span class="cbadge">⚡ Top 5 in the World</span>{% endif %}
+          {% if player.rank <= 10 and player.rank > 5 %}<span class="cbadge">🌟 Top 10 in the World</span>{% endif %}
+          {% if player.hand == "L" %}<span class="cbadge">✋ Left-Handed</span>{% endif %}
+          {% if player.age <= 22 %}<span class="cbadge">🌱 Next Gen Star</span>{% endif %}
+          {% if player.age >= 35 %}<span class="cbadge">🎖️ Veteran</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="ovr-hero-wrap">
+        <div class="ovr-hero badge-{{ tier.badge }}" id="ovr-hero" data-target="{{ player.rating }}">
+          <span class="ovr-hero-num" id="ovr-counter">0</span>
+          <span class="ovr-hero-lbl">OVR</span>
+          <span class="ovr-hero-tier" style="color:{{ tier.color }}">{{ tier.label }}</span>
+          <span class="ovr-hero-game">SmashRater</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container player-main">
+    <div class="player-cols">
+
+      <!-- Left: stat table -->
+      <section class="stat-section">
+        <h2 class="section-title">Player Profile</h2>
+        <table class="stat-table">
+          <thead><tr><th>Stat</th><th>Value</th><th>Context</th></tr></thead>
+          <tbody>
+            <tr><td>ATP Ranking</td><td class="mono">#{{ player.rank }}</td><td class="ctx">{% if player.rank <= 5 %}Elite Top 5{% elif player.rank <= 10 %}Top 10{% elif player.rank <= 30 %}Top 30{% elif player.rank <= 75 %}Top 75{% else %}Top 150{% endif %}</td></tr>
+            <tr><td>ATP Points</td><td class="mono">{{ player.points }}</td><td class="ctx">{% if player.rank <= 10 %}Title contender{% elif player.rank <= 30 %}Seeded at Slams{% else %}Tour regular{% endif %}</td></tr>
+            <tr><td>Grand Slam Titles</td><td class="mono">{{ player.grand_slams }}</td><td class="ctx">{% if player.grand_slams >= 10 %}All-time great{% elif player.grand_slams >= 3 %}Multiple champion{% elif player.grand_slams == 1 %}Grand Slam winner{% else %}Seeking first title{% endif %}</td></tr>
+            <tr><td>Career High Ranking</td><td class="mono">#{{ player.career_high }}</td><td class="ctx">{% if player.career_high == 1 %}Former World No.1{% elif player.career_high <= 5 %}Former Top 5{% elif player.career_high <= 10 %}Former Top 10{% else %}—{% endif %}</td></tr>
+            <tr><td>Nationality</td><td class="mono">{{ player.flag }} {{ player.country }}</td><td class="ctx">—</td></tr>
+            <tr><td>Playing Hand</td><td class="mono">{{ "Left" if player.hand == "L" else "Right" }}</td><td class="ctx">{% if player.hand == "L" %}Rare advantage{% else %}—{% endif %}</td></tr>
+            <tr><td>Age</td><td class="mono">{{ player.age }}</td><td class="ctx">{% if player.age <= 22 %}Rising star{% elif player.age <= 27 %}Prime years{% elif player.age <= 32 %}Experienced{% else %}Veteran{% endif %}</td></tr>
+            <tr><td>Turned Professional</td><td class="mono">{{ player.turned_pro }}</td><td class="ctx">{{ 2026 - player.turned_pro }} years on tour</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Right: rating breakdown -->
+      <section class="attr-section">
+        <h2 class="section-title">SmashRater Breakdown</h2>
+        <div class="attr-list">
+          {% set rank_score = [55, 90 - (player.rank - 1) * 0.23] | max | round | int %}
+          {% set gs_score = [99, 60 + player.grand_slams * 8] | min | int %}
+          {% set form_score = [99, 60 + (150 - player.rank) * 0.27] | min | round | int %}
+          {% set exp_score = [99, 60 + (2026 - player.turned_pro) * 2.2] | min | round | int %}
+          {% set legacy_score = [99, 60 + (150 - player.career_high) * 0.25 + player.grand_slams * 5] | min | round | int %}
+
+          {% for label, val, clr in [
+            ("Ranking Score",   rank_score, "#4FC3F7"),
+            ("Grand Slam Pedigree", gs_score, "#FFD700"),
+            ("Current Form",    form_score, "#81C784"),
+            ("Experience",      exp_score,  "#FFA726"),
+            ("Career Legacy",   legacy_score, "#C0C0C0"),
+          ] %}
+          <div class="attr-row">
+            <span class="attr-name">{{ label }}</span>
+            <div class="attr-bar-wrap">
+              <div class="attr-bar" style="--pct: {{ val }}%; --clr: {{ clr }};"></div>
+            </div>
+            <span class="attr-val mono">{{ val }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="rating-explain">
+          <h3>How Is This Rating Calculated?</h3>
+          <p>The SmashRater OVR combines five factors:</p>
+          <ul>
+            <li><strong>ATP Ranking (base)</strong> — Rank 1 starts at 90; drops ~0.23 per position</li>
+            <li><strong>Grand Slam Titles</strong> — +1.8 OVR per Slam won (up to +9)</li>
+            <li><strong>Career High Bonus</strong> — Former top-5 players get a legacy bump</li>
+            <li><strong>Age & Form</strong> — Reflected in current ranking trajectory</li>
+          </ul>
+          <p>Ratings range from 55 (rank 150) to 99 (all-time great). Novak Djokovic's 24 Grand Slams push him above his current ranking.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>SmashRater · Rankings from <a href="https://www.atptour.com" target="_blank">ATP Tour</a></p>
+  </footer>
+
+  <script src="/static/js/player.js"></script>
+  <script src="/static/js/tennis_search.js"></script>
+</body>
+</html>

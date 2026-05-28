@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmashRater — ATP Tennis Ratings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=IBM+Plex+Mono:wght@400;600&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/tennis.css" />
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="sport-switcher">
+      <a href="/" class="sport-btn">🏀 HoopRater</a>
+      <a href="/tennis" class="sport-btn active">🎾 SmashRater</a>
+    </div>
+    <div class="nav-links">
+      <a href="/tennis" class="active">Ratings</a>
+      <a href="/tennis/rankings">Rankings</a>
+      <a href="/tennis/compare">Compare</a>
+    </div>
+    <div class="nav-right">
+      <input id="tennis-search" type="text" placeholder="Search player…" autocomplete="off" />
+      <div id="tennis-search-results" class="search-dropdown hidden"></div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle mode">☀️</button>
+    </div>
+  </nav>
+
+  <header class="hero tennis-hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">2026 SEASON · ATP TOUR · MAY 25, 2026 RANKINGS</p>
+      <h1>ATP Player<br /><em>SmashRatings</em></h1>
+      <p class="hero-sub">Algorithmic performance ratings for the top 150 ATP players, built from ranking, Grand Slam titles, and career trajectory.</p>
+      <div class="hero-stats-bar">
+        <div class="hero-stat"><span class="hs-val">{{ players|length }}</span><span class="hs-lbl">Players Rated</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ players[0].name.split()[-1] }}</span><span class="hs-lbl">World No.1</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ players[0].grand_slams }}</span><span class="hs-lbl">GS Titles (Top)</span></div>
+        <div class="hero-stat"><span class="hs-val">{{ players[0].points }}</span><span class="hs-lbl">ATP Points (No.1)</span></div>
+      </div>
+    </div>
+    <div class="hero-grid-deco"></div>
+  </header>
+
+  <!-- Filter bar -->
+  <section class="filter-bar">
+    <div class="filter-label">FILTER:</div>
+    <div class="filter-tabs">
+      <button class="ftab active" data-filter="all">All</button>
+      <button class="ftab" data-filter="diamond">◆ Legend (95+)</button>
+      <button class="ftab" data-filter="gold">◆ GS Elite (90–94)</button>
+      <button class="ftab" data-filter="silver">◆ Top 10 (85–89)</button>
+      <button class="ftab" data-filter="bronze">◆ Top 30 (78–84)</button>
+      <button class="ftab" data-filter="green">◆ Top 75 (70–77)</button>
+    </div>
+    <div class="sort-wrap">
+      <label>SORT:</label>
+      <select id="sort-select">
+        <option value="rating">Rating</option>
+        <option value="rank">ATP Rank</option>
+        <option value="points">ATP Points</option>
+      </select>
+    </div>
+  </section>
+
+  <main class="container">
+    <div class="section-header">
+      <h2>Top 150 ATP Players</h2>
+      <p class="section-sub" id="grid-count">Showing {{ players|length }} players</p>
+    </div>
+
+    <div class="player-grid" id="player-grid">
+      {% for p in players %}
+      {% set badge = p.tier.badge %}
+      <a href="/tennis/player/{{ p.rank }}"
+         class="player-card {{ badge }}"
+         style="--rank: {{ loop.index }};"
+         data-badge="{{ badge }}"
+         data-rating="{{ p.rating }}"
+         data-rank="{{ p.rank }}"
+         data-points="{{ p.points }}">
+
+        <div class="card-team-stripe tennis-stripe-{{ badge }}"></div>
+        <div class="card-rank">#{{ p.rank }}</div>
+
+        <div class="card-ovr-badge badge-{{ badge }}">
+          <span class="ovr-number">{{ p.rating }}</span>
+          <span class="ovr-label">OVR</span>
+        </div>
+
+        <div class="card-headshot tennis-headshot">
+          <div class="tennis-flag">{{ p.flag }}</div>
+          <div class="tennis-initial">{{ p.name.split()[0][0] }}{{ p.name.split()[-1][0] }}</div>
+        </div>
+
+        <div class="card-info">
+          <span class="card-name">{{ p.name }}</span>
+          <span class="card-meta">{{ p.country }} · {{ "L" if p.hand == "L" else "R" }}-Handed</span>
+          <div class="card-stats-row">
+            <span><strong>{{ p.points }}</strong> PTS</span>
+            <span><strong>{{ p.grand_slams }}</strong> GS</span>
+            <span><strong>{{ p.age }}</strong> yrs</span>
+          </div>
+          <div class="card-stats-row small">
+            <span>Turned pro {{ p.turned_pro }}</span>
+            <span>Best: #{{ p.career_high }}</span>
+          </div>
+        </div>
+
+        <div class="card-tier-label" style="color: {{ p.tier.color }};">
+          {{ p.tier.label }}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>SmashRater · Rankings from <a href="https://www.atptour.com" target="_blank">ATP Tour</a> · May 25, 2026</p>
+  </footer>
+
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/tennis_search.js"></script>
+</body>
+</html>

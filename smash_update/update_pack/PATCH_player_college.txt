@@ -1,0 +1,11 @@
+<!-- PATCH for player.html — replace the player-season line and add college row to stat table -->
+<!-- Find this line in player.html:
+     <p class="player-season">{{ stats.gp }} Games · {{ "%.1f"|format(stats.min) }} MPG · Age {{ stats.age }}</p>
+     Replace with: -->
+<p class="player-season">{{ stats.gp }} Games · {{ "%.1f"|format(stats.min) }} MPG · Year {{ stats.age }} · {{ college }}</p>
+
+<!-- Also add this row to the stat table AFTER "Games Played": -->
+<tr>
+  <td>College</td>
+  <td class="mono" colspan="2">{{ college }}</td>
+</tr>
